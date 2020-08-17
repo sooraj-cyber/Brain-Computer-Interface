@@ -1,0 +1,88 @@
+#include <LiquidCrystal.h>
+#include <SoftwareSerial.h>
+SoftwareSerial BT(9, 10);
+LiquidCrystal lcd(2, 3, 4, 5, 6, 7);
+int bcipin = A0;
+int relaypin = 8;
+int ronpin = 11;
+int roffpin = 12;
+int bcival = 0;
+int fbcival = 0;
+int i = 0;
+int j = 0;
+void setup() {
+  lcd.begin(16, 2);
+  lcd.setCursor(0, 0);
+  lcd.print(" BRAIN COMPUTER ");
+  lcd.setCursor(0, 1);
+  lcd.print("    INTERFACE   ");
+  delay(2000);
+  lcd.setCursor(0, 1);
+  lcd.print("                ");
+  pinMode(bcipin, INPUT);
+  pinMode(relaypin, OUTPUT);
+  pinMode(ronpin, OUTPUT);
+  pinMode(roffpin, OUTPUT);
+  digitalWrite(relaypin, LOW);
+  digitalWrite(ronpin, LOW);
+  digitalWrite(roffpin, LOW);
+  Serial.begin(9600);
+  Serial.println("BRAIN COMPUTER INTERFACE");
+  lcd.setCursor(0, 0);
+  lcd.print("READING DATA....");
+  BT.begin(9600);
+  }
+
+void loop() {
+  bcival = analogRead(bcipin);
+  delay(5);
+  fbcival = 1024 - bcival;
+  Serial.print("BCIVAL=");
+  Serial.println(fbcival);
+  Serial.println("-------");
+  delay(1000);
+  
+  if (fbcival > 1003) {
+    if (j == 0) {
+      i = i + 1;
+      Serial.print("i=");
+      Serial.println(i);
+    }
+    if (j == 1) {
+      i = i + 2;
+      Serial.print("i=");
+      Serial.println(i);
+    }
+    if (i == 1) {
+      j = 1;
+      Serial.print("j=");
+      Serial.println(j);
+      digitalWrite(relaypin, HIGH);
+      digitalWrite(roffpin, LOW);
+      digitalWrite(ronpin, HIGH);
+      Serial.println("RELAY ON");
+      BT.println("#RELAYON$");
+      lcd.setCursor(0, 1);
+      lcd.print("    BULB ON     ");
+      delay(3000);
+      digitalWrite(ronpin, LOW);
+    }
+    if (i == 3) {
+      j = 0;
+      Serial.print("j=");
+      Serial.println(j);
+      digitalWrite(relaypin, LOW);
+      digitalWrite(ronpin, LOW);
+      digitalWrite(roffpin, HIGH);
+      Serial.println("RELAY OFF");
+      BT.println("#RELAYOFF$");
+      lcd.setCursor(0, 1);
+      lcd.print("    BULB OFF    ");
+      i = 0;
+      delay(3000);
+      digitalWrite(roffpin, LOW);
+    }
+  }
+
+
+}
